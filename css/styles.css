@@ -80,4 +80,12 @@
 
 .row {
   display: flex;
+}
+
+a {
+  text-decoration: none;
+  display: inline-block;
+  padding: 5px;
+  background-color: gray;
+  border-radius: 10px;
 }/*# sourceMappingURL=styles.css.map */

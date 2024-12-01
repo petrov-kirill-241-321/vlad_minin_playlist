@@ -1,4 +1,4 @@
-const fruits = [
+let fruits = [
   {
     id: 1,
     title: "Яблоки",
@@ -15,42 +15,67 @@ const fruits = [
     id: 3,
     title: "Манго",
     price: 40,
-    img: "https://edadeal.ru/journal/230729-the-benefits-of-mango/_huc658034e20cafe494dd154c141d9cbe5_419002_58f797bd6b87d839c5906518c722a798.png",
+    img: "https://cdn.food.ru/unsigned/fit/640/480/ce/0/czM6Ly9tZWRpYS9waWN0dXJlcy9wcm9kdWN0cy82ODYvY292ZXJzLzM4dEdDZC5qcGc.jpg",
   },
 ];
 
-/*
- * 1. Динамически на основе массива вывести список карточек
- * 2. Показать цену в модалке (и это должна быть 1 модалка)
- * 3. Модалка для удаления с 2мя кнопками
- * ---------
- * 4. На основе $.modal нужно сделать другой плагин $.confirm (Promise)
- * */
+const toHTML = (fruit) => `
+    <div class="col">
+      <div class="card">
+        <img class="card-img-top" style="height: 300px;" src="${fruit.img}" alt="${fruit.title}">
+        <div class="card-body">
+          <h5 class="card-title">${fruit.title}</h5>
+          <a href="#" class="btn btn-primary" data-btn="price" data-id="${fruit.id}">Посмотреть цену</a>
+          <a href="#" class="btn btn-danger" data-btn="remove" data-id="${fruit.id}">Удалить</a>
+        </div>
+      </div>
+    </div>
+  `;
 
-const modal = $.modal({
-  title: "Vladilen Modal",
+function render() {
+  const html = fruits.map(toHTML).join("");
+  document.querySelector("#fruits").innerHTML = html;
+}
+
+render();
+
+const priceModal = $.modal({
+  title: "Цена на Товар",
   closable: true,
-  content: `
-      <p>Lorem ipsum dolor sit.</p>
-      <p>Lorem ipsum dolor sit.</p>
-    `,
   width: "400px",
   footerButtons: [
     {
-      text: "Ок",
+      text: "Закрыть",
       type: "primary",
       handler() {
-        console.log("Primary btn clicked");
-        modal.close();
-      },
-    },
-    {
-      text: "Cancel",
-      type: "danger",
-      handler() {
-        console.log("Danger btn clicked");
-        modal.close();
+        priceModal.close();
       },
     },
   ],
+});
+
+document.addEventListener("click", (event) => {
+  event.preventDefault();
+  const btnType = event.target.dataset.btn;
+  const id = +event.target.dataset.id;
+  const fruit = fruits.find((f) => f.id === id);
+
+  if (btnType === "price") {
+    priceModal.setContent(`
+        <p>Цена на ${fruit.title}: <strong>${fruit.price}$</strong></p>
+      `);
+    priceModal.open();
+  } else if (btnType === "remove") {
+    $.confirm({
+      title: "Вы уверены?",
+      content: `<p>Вы удаляете фрукт: <strong>${fruit.title}</strong></p>`,
+    })
+      .then(() => {
+        fruits = fruits.filter((f) => f.id !== id);
+        render();
+      })
+      .catch(() => {
+        console.log("Cancel");
+      });
+  }
 });
